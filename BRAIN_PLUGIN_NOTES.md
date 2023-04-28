@@ -164,6 +164,7 @@ In parenthesis, let's add a priority level:
 - [x] Overview of the goals (read this document)
 - [x] Starting the repo and the VS project
 - [ ] Raw POST component
+  - [x] Prototype it real quick
   - [ ] First do a blocking version
   - [ ] Then upgrade to async version
   - [ ] Modify speckle to accept `string` updates vs. `double` updates
