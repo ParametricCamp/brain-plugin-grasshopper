@@ -4,7 +4,7 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 
-namespace brain_ghplugin
+namespace Brain
 {
     public class brain_ghpluginComponent : GH_Component
     {

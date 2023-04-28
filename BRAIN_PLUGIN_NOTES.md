@@ -162,9 +162,12 @@ In parenthesis, let's add a priority level:
 ## HOW DO WE BREAK THIS DOWN INTO VIDEOS FOR A PLAYLIST?
 - [x] General intro (do a temp one and then replace with the final thing)
 - [x] Overview of the goals (read this document)
-- [ ] Starting the repo and the VS project
-- [ ] Simple GET component (Async)
-- [ ] Simple POST component (Async)
+- [x] Starting the repo and the VS project
+- [ ] Raw POST component
+  - [ ] First do a blocking version
+  - [ ] Then upgrade to async version
+  - [ ] Modify speckle to accept `string` updates vs. `double` updates
+- [ ] Raw GET component --> extension of the above.
 - [ ] Simple OpenAI Text Completion component (Async)
 - [ ] Some other component
 - [ ] Create a superclass for components with requests? (take the two prev components and abstract their common func)
