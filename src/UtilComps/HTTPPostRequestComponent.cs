@@ -6,7 +6,7 @@ using System.Text;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 
-namespace Brain.Utilities
+namespace brain_ghplugin.UtilComps
 {
     public class HTTPPostRequestComponent : GH_Component
     {
@@ -15,7 +15,7 @@ namespace Brain.Utilities
         /// </summary>
         public HTTPPostRequestComponent()
           : base("HTTPPostRequestComponent", "POST",
-              "Create a generic HTTP POST request",
+              "Creates a generic HTTP POST request (synchronous)",
               "Brain", "Utils")
         {
         }
@@ -25,20 +25,23 @@ namespace Brain.Utilities
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            // url
-            // body
-            // content/type
-            // custom headers (not jet)
-            // auth --> 
-            // timeout
-
+            // active
             pManager.AddBooleanParameter("Send", "S", "Perform the request?", GH_ParamAccess.item, false);
+            // url (endpoint)
             pManager.AddTextParameter("Url", "U", "Url for the request", GH_ParamAccess.item);
+            // body
             pManager.AddTextParameter("Body", "B", "Body of the request", GH_ParamAccess.item);
+            // context/type
             pManager.AddTextParameter("Content Type", "T", "Content type for the request, such as \"application/json\", \"text/html\", etc.", GH_ParamAccess.item, "application/json");
+
+            // custom headers (future)
             // custom headers would be nice here: how to handle key-value pairs in GH? takes in a tree?
+            
+            // auth 
             int authId = pManager.AddTextParameter("Authorization", "A", "If this request requires authorization, input your formatted token as an Auth string, e.g. \"Bearer h1g23g1fdg3d1\"", GH_ParamAccess.item);
+            // timeout
             pManager.AddIntegerParameter("Timeout", "T", "Timeout for the request in ms. If the request takes longer that this, it will fail.", GH_ParamAccess.item, 10000);
+
 
             pManager[authId].Optional = true;
         }
@@ -84,19 +87,22 @@ namespace Brain.Utilities
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Empty URL");
                 return;
             }
+            if (contentType == null || contentType.Length == 0)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Empty content type");
+                return;
+            }
 
-            // Perform the request
-            if (url == null) return;
+            // Compose the request
+            byte[] data = Encoding.ASCII.GetBytes(body);
 
-            var data = Encoding.ASCII.GetBytes(body);
-
-            var request = (HttpWebRequest)WebRequest.Create(url);
+            HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
             request.Method = "POST";
             request.ContentType = contentType;
-            request.ContentLength = body.Length;
+            request.ContentLength = data.Length;
             request.Timeout = timeout;
 
-            // If required by the server, set the credentials.
+            // Handle authorization
             if (authToken != null && authToken.Length > 0)
             {
                 System.Net.ServicePointManager.Expect100Continue = true;
@@ -107,7 +113,7 @@ namespace Brain.Utilities
             }
             else
             {
-                request.Credentials = System.Net.CredentialCache.DefaultCredentials;
+                request.Credentials = CredentialCache.DefaultCredentials;
             }
 
             using (var stream = request.GetRequestStream())
@@ -115,22 +121,19 @@ namespace Brain.Utilities
                 stream.Write(data, 0, data.Length);
             }
 
-
             string response = "";
             try
             {
-                HttpWebResponse res = (HttpWebResponse)request.GetResponse();
-
-                string responseString = new StreamReader(res.GetResponseStream()).ReadToEnd();
-
-                response = responseString;
+                var res = request.GetResponse();
+                response = new StreamReader(res.GetResponseStream()).ReadToEnd();
             }
             catch (Exception ex)
             {
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, ex.ToString());
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went wrong: " + ex.Message);
+                return;
             }
 
-            // Outputs
+            // Output
             DA.SetData(0, response);
         }
 
@@ -152,7 +155,7 @@ namespace Brain.Utilities
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("EE1479E5-D1E6-498A-A36A-8D16BBDE0C8C"); }
+            get { return new Guid("CC83DAAC-80BA-4880-B7E3-24D8B53C0CAD"); }
         }
     }
 }
