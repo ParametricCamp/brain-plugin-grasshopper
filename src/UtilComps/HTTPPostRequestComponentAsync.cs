@@ -17,7 +17,7 @@ namespace Brain.Utilities
         /// </summary>
         public HTTPPostRequestComponentAsync()
           : base("HTTPPostRequestComponentAsync", "POST Async",
-              "Create an async generic HTTP POST request",
+              "Create an async generic HTTP POST request (SpeckleAsync)",
               "Brain", "Utils")
         {
             BaseWorker = new HttpPostWorker();
