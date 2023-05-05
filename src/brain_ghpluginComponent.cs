@@ -101,6 +101,11 @@ namespace Brain
             DA.SetData(0, spiral);
         }
 
+        protected override void ExpireDownStreamObjects()
+        {
+            base.ExpireDownStreamObjects();
+        }
+
         Curve CreateSpiral(Plane plane, double r0, double r1, Int32 turns)
         {
             Line l0 = new Line(plane.Origin + r0 * plane.XAxis, plane.Origin + r1 * plane.XAxis);
