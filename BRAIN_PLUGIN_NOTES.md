@@ -190,3 +190,7 @@ In parenthesis, let's add a priority level:
 10. RhinoNeuralNet
 
 Lame! We are sticking to `Brain` for the time being 🧠
+
+
+# TAGS FOR VIDEOS
+AI, Artificial Intelligence, ML, Machine Learning, Grasshopper,Scripting,Development,C#,Parametric,Modeling,Computational,Geometry,Design,Algorithm,Algorithmic,Rhino,Rhinoceros,Designers,Vector,Algebra,Introduction,3D,2D,CAD,BIM
