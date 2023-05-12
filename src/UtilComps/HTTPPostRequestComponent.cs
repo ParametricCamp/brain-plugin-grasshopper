@@ -14,7 +14,7 @@ namespace brain_ghplugin.UtilComps
         /// Initializes a new instance of the HTTPPostRequestComponent class.
         /// </summary>
         public HTTPPostRequestComponent()
-          : base("HTTPPostRequestComponent", "POST",
+          : base("HTTPPostRequest", "POST",
               "Creates a generic HTTP POST request (synchronous)",
               "Brain", "Utils")
         {
