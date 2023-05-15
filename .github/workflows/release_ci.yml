@@ -1,0 +1,106 @@
+name: release_ci
+
+on:
+  push: # Runs on push to main branch
+    branches:
+      - "main"
+  
+  schedule: # Runs automatically every Friday at 07:00 EST | 11:00 UTC | 12:00 CET | 16:30 IST
+    - cron: "0 11 * * 5"
+  
+  workflow_dispatch: # Runs when manually triggered
+
+jobs:
+
+  pre-build: # Performs some simple checks before building the plugin(s)
+    name: Pre Build
+    runs-on: ubuntu-latest
+    outputs:
+      any_changed: ${{steps.changed-files.outputs.any_changed}}
+      version: ${{steps.set_version.outputs.version}}
+    steps:
+      # Access the files of this repo in Actions environment
+      - name: Checkout Repo
+        uses: actions/checkout@v3.3.0
+        with:
+          fetch-depth: 0
+        
+      # Check if the project file (containing the version number) was changed
+      - name: Changed Files
+        uses: tj-actions/changed-files@v35.5.6
+        id: changed-files
+        with:
+          files: src/brain_ghplugin.csproj
+
+      # Stop workflow if project file was unchanged
+      - name: Fail Job
+        if: ${{steps.changed-files.outputs.any_changed == 'false'}}
+        run: |
+          echo "::error title=❌ No Version Update::No changes in version tag was detected"
+          echo No change in version detected.
+          echo Exiting workflow.
+          exit 1
+
+      # Proceed installing Python (oops!)
+      - name: Install Python
+        if: ${{steps.changed-files.outputs.any_changed == 'true'}}
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      # Extract new version number from project file
+      - name: Update Version
+        run: python .github/workflows/update_version.py
+      
+      # Output version number in environment for later use
+      - name: Set Version
+        id: set_version
+        run: |
+          echo VersionInfo: ${{ env.VERSION }}
+          echo PackageName: brain_ghplugin-v${{ env.VERSION }}
+          echo "version=${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
+      
+  build: # Builds the Visual Studio solution using MsBuild
+    name: Build GH Plugin
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    needs: [pre-build] # Runs only if pre-build was successful
+
+    steps:
+      # Access the files of this repo in Actions environment
+      - name: Checkout Repo
+        uses: actions/checkout@v3.3.0
+
+      # Set up MsBuild, and Restore dependencies from NuGet
+      - name: Setup MsBuild
+        uses: microsoft/setup-msbuild@v1
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1
+        
+      - name: Restore NuGet Packages
+        run: nuget restore src/brain_ghplugin.sln
+
+      # Build the solution
+      - name: Build Solution
+        run: msbuild src/brain_ghplugin.sln /p:Configuration=Release
+
+      # Create a ZIP with solution binaries (a.k.a the plugin)
+      - name: Create Archive
+        uses: TheDoctor0/zip-release@0.7.1
+        with: 
+          type: 'zip'
+          directory: src/bin/Release/net48/
+          filename: brain_ghplugin-v${{ needs.pre-build.outputs.version }}.zip
+      
+      # Automatically deploy a new release based on project version number
+      - name: Deploy Release
+        uses: ncipollo/release-action@v1.12.0
+        with:
+          name: brain_ghplugin-v${{ needs.pre-build.outputs.version }} # Version number extracted in pre-build
+          tag: v${{ needs.pre-build.outputs.version }}
+          artifacts: src/bin/Release/net48/brain_ghplugin-v${{ needs.pre-build.outputs.version }}.zip
+          makeLatest: true
+          allowUpdates: false
+          token: ${{ secrets.GITHUB_TOKEN }}

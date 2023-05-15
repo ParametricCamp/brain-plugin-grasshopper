@@ -24,5 +24,8 @@
       )"</StartArguments>
     <StartAction>Program</StartAction>
   </PropertyGroup>
-
+  
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="Copy &quot;$(TargetPath)&quot; &quot;%25AppData%25\Grasshopper\Libraries\brain_ghplugin.gha&quot;" />
+  </Target>
 </Project>

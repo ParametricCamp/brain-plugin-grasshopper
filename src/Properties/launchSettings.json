@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "brain_ghplugin": {
+      "commandName": "Project",
+      "commandLineArgs": "/nosplash /runscript=\"_-Grasshopper Banner Disable Window Load Window Show _Enter\""
+    }
+  }
+}
