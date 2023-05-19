@@ -9,7 +9,7 @@ using Grasshopper.Kernel;
 using Rhino;
 using Rhino.Geometry;
 
-namespace brain_ghplugin.UtilComps
+namespace Brain.UtilComps
 {
     public class HTTPPostRequestAsyncComponent : GH_Component
     {

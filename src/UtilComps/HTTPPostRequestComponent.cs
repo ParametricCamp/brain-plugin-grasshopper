@@ -6,7 +6,7 @@ using System.Text;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 
-namespace brain_ghplugin.UtilComps
+namespace Brain.UtilComps
 {
     public class HTTPPostRequestComponent : GH_Component
     {

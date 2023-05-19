@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace brain_ghplugin.UtilComps
+namespace Brain.UtilComps
 {
     enum RequestState
     {
