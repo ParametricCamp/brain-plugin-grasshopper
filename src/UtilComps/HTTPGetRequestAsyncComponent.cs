@@ -2,27 +2,26 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
-using Grasshopper.GUI.Script;
 using Grasshopper.Kernel;
 using Rhino;
 using Rhino.Geometry;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 
 namespace Brain.UtilComps
 {
-    public class HTTPPostRequestAsyncComponent : GH_Component
+    public class HTTPGetRequestAsyncComponent : GH_Component
     {
         private string _response = "";
         private bool _shouldExpire = false;
         private RequestState _currentState = RequestState.Off;
 
         /// <summary>
-        /// Initializes a new instance of the HTTPPostRequestAsyncComponent class.
+        /// Initializes a new instance of the HTTPGetRequestAsyncComponent class.
         /// </summary>
-        public HTTPPostRequestAsyncComponent()
-          : base("HTTP Post Request (Async)", "POST Async",
-              "Creates a generic HTTP POST request (asynchronous)",
+        public HTTPGetRequestAsyncComponent()
+          : base("HTTP GET Request (Async)", "GET Async",
+              "Creates a generic HTTP GET request (asynchronous)",
               "Brain", "Utils")
         {
         }
@@ -31,15 +30,10 @@ namespace Brain.UtilComps
         /// Registers all the input parameters for this component.
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
-        {
-            // active
+        {// active
             pManager.AddBooleanParameter("Send", "S", "Perform the request?", GH_ParamAccess.item, false);
             // url (endpoint)
             pManager.AddTextParameter("Url", "U", "Url for the request", GH_ParamAccess.item);
-            // body
-            pManager.AddTextParameter("Body", "B", "Body of the request", GH_ParamAccess.item);
-            // context/type
-            pManager.AddTextParameter("Content Type", "T", "Content type for the request, such as \"application/json\", \"text/html\", etc.", GH_ParamAccess.item, "application/json");
 
             // custom headers (future)
             // custom headers would be nice here: how to handle key-value pairs in GH? takes in a tree?
@@ -68,11 +62,10 @@ namespace Brain.UtilComps
         {
             if (_shouldExpire)
             {
-                switch(_currentState)
+                switch (_currentState)
                 {
                     case RequestState.Off:
                         this.Message = "Inactive";
-                        DA.SetData(0, "");
                         _currentState = RequestState.Idle;
                         break;
 
@@ -84,11 +77,10 @@ namespace Brain.UtilComps
 
                     case RequestState.Done:
                         this.Message = "Complete!";
-                        DA.SetData(0, _response);
                         _currentState = RequestState.Idle;
                         break;
                 }
-                // Output
+                // Output...
                 DA.SetData(0, _response);
                 _shouldExpire = false;
                 return;
@@ -96,8 +88,6 @@ namespace Brain.UtilComps
 
             bool active = false;
             string url = "";
-            string body = "";
-            string contentType = "";
             string authToken = "";
             int timeout = 0;
 
@@ -106,13 +96,12 @@ namespace Brain.UtilComps
             {
                 _currentState = RequestState.Off;
                 _shouldExpire = true;
+                _response = "";
                 ExpireSolution(true);
                 return;
             }
 
             if (!DA.GetData("Url", ref url)) return;
-            if (!DA.GetData("Body", ref body)) return;
-            if (!DA.GetData("Content Type", ref contentType)) return;
             DA.GetData("Authorization", ref authToken);
             if (!DA.GetData("Timeout", ref timeout)) return;
 
@@ -125,33 +114,23 @@ namespace Brain.UtilComps
                 ExpireSolution(true);
                 return;
             }
-            if (contentType == null || contentType.Length == 0)
-            {
-                _response = "Empty content type";
-                _currentState = RequestState.Error;
-                _shouldExpire = true;
-                ExpireSolution(true);
-                return;
-            }
 
             _currentState = RequestState.Requesting;
             this.Message = "Requesting...";
 
-            AsyncPOST(url, body, contentType, authToken, timeout);  
+            AsyncGET(url, authToken, timeout);
         }
 
         protected override void ExpireDownStreamObjects()
         {
             if (_shouldExpire)
-            { 
+            {
                 base.ExpireDownStreamObjects();
             }
         }
 
-        private void AsyncPOST(
+        private void AsyncGET(
             string url,
-            string body,
-            string contentType,
             string authorization,
             int timeout)
         {
@@ -160,12 +139,8 @@ namespace Brain.UtilComps
                 try
                 {
                     // Compose the request
-                    byte[] data = Encoding.ASCII.GetBytes(body);
-
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                    request.Method = "POST";
-                    request.ContentType = contentType;
-                    request.ContentLength = data.Length;
+                    request.Method = "GET";
                     request.Timeout = timeout;
 
                     // Handle authorization
@@ -182,10 +157,6 @@ namespace Brain.UtilComps
                         request.Credentials = CredentialCache.DefaultCredentials;
                     }
 
-                    using (var stream = request.GetRequestStream())
-                    {
-                        stream.Write(data, 0, data.Length);
-                    }
                     var res = request.GetResponse();
                     _response = new StreamReader(res.GetResponseStream()).ReadToEnd();
 
@@ -226,7 +197,7 @@ namespace Brain.UtilComps
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("97B12696-7321-423E-BCF6-56486645DE15"); }
+            get { return new Guid("27F15667-131B-433C-9605-CEED238B11DD"); }
         }
     }
 }
