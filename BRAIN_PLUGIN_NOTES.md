@@ -168,8 +168,8 @@ In parenthesis, let's add a priority level:
   - [x] First do a blocking version
   - [x] Then upgrade to async version
   - [x] ~~Modify speckle to accept `string` updates vs. `double` updates~~ --> Did it with the template
-- [ ] Raw GET component --> extension of the above.
-- [ ] Get ENV variable component
+- [x] Raw GET component --> extension of the above.
+- [x] Get ENV variable component
 - [ ] Simple OpenAI Text Completion component (Async)
 - [ ] Some other component
 - [ ] Create a superclass for components with requests? (take the two prev components and abstract their common func)
