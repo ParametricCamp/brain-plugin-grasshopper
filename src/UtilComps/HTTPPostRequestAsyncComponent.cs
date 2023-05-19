@@ -207,9 +207,6 @@ namespace Brain.UtilComps
                     return;
                 }
             });
-
-            
-
         }
 
         /// <summary>

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32922.545
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "brain_ghplugin", "brain_ghplugin.csproj", "{53208E7D-A31D-4817-A27E-49ED0CF2999B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Brain", "Brain.csproj", "{53208E7D-A31D-4817-A27E-49ED0CF2999B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
