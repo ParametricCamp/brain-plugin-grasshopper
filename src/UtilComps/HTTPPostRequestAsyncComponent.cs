@@ -72,7 +72,6 @@ namespace Brain.UtilComps
                 {
                     case RequestState.Off:
                         this.Message = "Inactive";
-                        DA.SetData(0, "");
                         _currentState = RequestState.Idle;
                         break;
 
@@ -84,7 +83,6 @@ namespace Brain.UtilComps
 
                     case RequestState.Done:
                         this.Message = "Complete!";
-                        DA.SetData(0, _response);
                         _currentState = RequestState.Idle;
                         break;
                 }
@@ -106,6 +104,7 @@ namespace Brain.UtilComps
             {
                 _currentState = RequestState.Off;
                 _shouldExpire = true;
+                _response = "";
                 ExpireSolution(true);
                 return;
             }
