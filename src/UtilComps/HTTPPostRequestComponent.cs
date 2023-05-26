@@ -14,7 +14,7 @@ namespace Brain.UtilComps
         /// Initializes a new instance of the HTTPPostRequestComponent class.
         /// </summary>
         public HTTPPostRequestComponent()
-          : base("HTTPPostRequest", "POST",
+          : base("HTTP POST", "POST",
               "Creates a generic HTTP POST request (synchronous)",
               "Brain", "Utils")
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using Brain.Templates;
 using Grasshopper.Kernel;
 using Rhino;
 using Rhino.Geometry;
@@ -20,7 +21,7 @@ namespace Brain.UtilComps
         /// Initializes a new instance of the HTTPGetRequestAsyncComponent class.
         /// </summary>
         public HTTPGetRequestAsyncComponent()
-          : base("HTTP GET Request (Async)", "GET Async",
+          : base("HTTP GET (Async)", "GET Async",
               "Creates a generic HTTP GET request (asynchronous)",
               "Brain", "Utils")
         {

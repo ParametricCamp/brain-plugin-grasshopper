@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Brain.UtilComps
+namespace Brain.Templates
 {
     enum RequestState
     {
-        Off, 
-        Idle, 
-        Requesting, 
+        Off,
+        Idle,
+        Requesting,
         Done,
         Error
     };

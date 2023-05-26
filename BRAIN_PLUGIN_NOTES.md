@@ -163,16 +163,22 @@ In parenthesis, let's add a priority level:
 - [x] General intro (do a temp one and then replace with the final thing)
 - [x] Overview of the goals (read this document)
 - [x] Starting the repo and the VS project
-- [ ] Raw POST component
+- [x] Raw POST component
   - [x] Prototype it real quick
   - [x] First do a blocking version
   - [x] Then upgrade to async version
   - [x] ~~Modify speckle to accept `string` updates vs. `double` updates~~ --> Did it with the template
 - [x] Raw GET component --> extension of the above.
 - [x] Get ENV variable component
+
+- [ ] Create a superclass for components with requests? (take the two prev components and abstract their common func)
+  - [ ] Prototype a custom `GH_Component` template for `sync` POST request components.
+  - [ ] Rewrite the `POST Sync` component to use the template.
+  - [ ] Do the same for `async`
+  - [ ] Do the same for `GET` requests. 
+
 - [ ] Simple OpenAI Text Completion component (Async)
 - [ ] Some other component
-- [ ] Create a superclass for components with requests? (take the two prev components and abstract their common func)
 - [ ] More components? 
 
 ### OTHER VIDEOS

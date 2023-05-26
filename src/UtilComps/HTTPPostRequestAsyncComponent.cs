@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Brain.Templates;
 using Grasshopper.GUI.Script;
 using Grasshopper.Kernel;
 using Rhino;
@@ -21,7 +22,7 @@ namespace Brain.UtilComps
         /// Initializes a new instance of the HTTPPostRequestAsyncComponent class.
         /// </summary>
         public HTTPPostRequestAsyncComponent()
-          : base("HTTP Post Request (Async)", "POST Async",
+          : base("HTTP POST (async)", "POST Async",
               "Creates a generic HTTP POST request (asynchronous)",
               "Brain", "Utils")
         {
