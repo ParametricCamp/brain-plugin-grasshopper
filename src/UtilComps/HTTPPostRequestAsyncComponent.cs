@@ -12,12 +12,8 @@ using Rhino.Geometry;
 
 namespace Brain.UtilComps
 {
-    public class HTTPPostRequestAsyncComponent : GH_Component
+    public class HTTPPostRequestAsyncComponent : GH_Component_POSTAsync
     {
-        private string _response = "";
-        private bool _shouldExpire = false;
-        private RequestState _currentState = RequestState.Off;
-
         /// <summary>
         /// Initializes a new instance of the HTTPPostRequestAsyncComponent class.
         /// </summary>
@@ -137,76 +133,10 @@ namespace Brain.UtilComps
             _currentState = RequestState.Requesting;
             this.Message = "Requesting...";
 
-            AsyncPOST(url, body, contentType, authToken, timeout);  
+            POSTAsync(url, body, contentType, authToken, timeout);  
         }
 
-        protected override void ExpireDownStreamObjects()
-        {
-            if (_shouldExpire)
-            { 
-                base.ExpireDownStreamObjects();
-            }
-        }
 
-        private void AsyncPOST(
-            string url,
-            string body,
-            string contentType,
-            string authorization,
-            int timeout)
-        {
-            Task.Run(() =>
-            {
-                try
-                {
-                    // Compose the request
-                    byte[] data = Encoding.ASCII.GetBytes(body);
-
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                    request.Method = "POST";
-                    request.ContentType = contentType;
-                    request.ContentLength = data.Length;
-                    request.Timeout = timeout;
-
-                    // Handle authorization
-                    if (authorization != null && authorization.Length > 0)
-                    {
-                        System.Net.ServicePointManager.Expect100Continue = true;
-                        System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12; //the auth type
-
-                        request.PreAuthenticate = true;
-                        request.Headers.Add("Authorization", authorization);
-                    }
-                    else
-                    {
-                        request.Credentials = CredentialCache.DefaultCredentials;
-                    }
-
-                    using (var stream = request.GetRequestStream())
-                    {
-                        stream.Write(data, 0, data.Length);
-                    }
-                    var res = request.GetResponse();
-                    _response = new StreamReader(res.GetResponseStream()).ReadToEnd();
-
-                    _currentState = RequestState.Done;
-
-                    _shouldExpire = true;
-                    RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
-                }
-                catch (Exception ex)
-                {
-                    _response = ex.Message;
-
-                    _currentState = RequestState.Error;
-
-                    _shouldExpire = true;
-                    RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
-
-                    return;
-                }
-            });
-        }
 
         /// <summary>
         /// Provides an Icon for the component.

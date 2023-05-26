@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Brain.Templates
 {
-    enum RequestState
+    public enum RequestState
     {
         Off,
         Idle,
