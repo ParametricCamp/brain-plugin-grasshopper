@@ -6,10 +6,11 @@ using System.Text;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 using Brain.Templates;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 
 namespace Brain.UtilComps
 {
-    public class HTTPPostRequestComponent : GH_Component_POSTSync
+    public class HTTPPostRequestComponent : GH_Component_HTTPSync
     {
         /// <summary>
         /// Initializes a new instance of the HTTPPostRequestComponent class.
@@ -71,7 +72,6 @@ namespace Brain.UtilComps
             int timeout = 0;
 
             DA.GetData("Send", ref active);
-
             if (!active)
             {
                 DA.SetData("Response", "");

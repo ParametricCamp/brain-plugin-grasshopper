@@ -7,16 +7,17 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 
 namespace Brain.Templates
 {
-    public abstract class GH_Component_POSTAsync : GH_Component
+    public abstract class GH_Component_HTTPAsync : GH_Component
     {
         protected string _response = "";
         protected bool _shouldExpire = false;
         protected RequestState _currentState = RequestState.Off;
 
-        public GH_Component_POSTAsync(string name, string nickname, string description, string category, string subcategory)
+        public GH_Component_HTTPAsync(string name, string nickname, string description, string category, string subcategory)
     : base(name, nickname, description, category, subcategory)
         {
         }
@@ -67,6 +68,57 @@ namespace Brain.Templates
                     {
                         stream.Write(data, 0, data.Length);
                     }
+                    var res = request.GetResponse();
+                    _response = new StreamReader(res.GetResponseStream()).ReadToEnd();
+
+                    _currentState = RequestState.Done;
+
+                    _shouldExpire = true;
+                    RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
+                }
+                catch (Exception ex)
+                {
+                    _response = ex.Message;
+
+                    _currentState = RequestState.Error;
+
+                    _shouldExpire = true;
+                    RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
+
+                    return;
+                }
+            });
+        }
+
+
+        protected void GETAsync(
+            string url,
+            string authorization,
+            int timeout)
+        {
+            Task.Run(() =>
+            {
+                try
+                {
+                    // Compose the request
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                    request.Method = "GET";
+                    request.Timeout = timeout;
+
+                    // Handle authorization
+                    if (authorization != null && authorization.Length > 0)
+                    {
+                        System.Net.ServicePointManager.Expect100Continue = true;
+                        System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12; //the auth type
+
+                        request.PreAuthenticate = true;
+                        request.Headers.Add("Authorization", authorization);
+                    }
+                    else
+                    {
+                        request.Credentials = CredentialCache.DefaultCredentials;
+                    }
+
                     var res = request.GetResponse();
                     _response = new StreamReader(res.GetResponseStream()).ReadToEnd();
 

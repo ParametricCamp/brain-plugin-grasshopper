@@ -11,12 +11,8 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 
 namespace Brain.UtilComps
 {
-    public class HTTPGetRequestAsyncComponent : GH_Component
+    public class HTTPGetRequestAsyncComponent : GH_Component_HTTPAsync
     {
-        private string _response = "";
-        private bool _shouldExpire = false;
-        private RequestState _currentState = RequestState.Off;
-
         /// <summary>
         /// Initializes a new instance of the HTTPGetRequestAsyncComponent class.
         /// </summary>
@@ -119,65 +115,7 @@ namespace Brain.UtilComps
             _currentState = RequestState.Requesting;
             this.Message = "Requesting...";
 
-            AsyncGET(url, authToken, timeout);
-        }
-
-        protected override void ExpireDownStreamObjects()
-        {
-            if (_shouldExpire)
-            {
-                base.ExpireDownStreamObjects();
-            }
-        }
-
-        private void AsyncGET(
-            string url,
-            string authorization,
-            int timeout)
-        {
-            Task.Run(() =>
-            {
-                try
-                {
-                    // Compose the request
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                    request.Method = "GET";
-                    request.Timeout = timeout;
-
-                    // Handle authorization
-                    if (authorization != null && authorization.Length > 0)
-                    {
-                        System.Net.ServicePointManager.Expect100Continue = true;
-                        System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12; //the auth type
-
-                        request.PreAuthenticate = true;
-                        request.Headers.Add("Authorization", authorization);
-                    }
-                    else
-                    {
-                        request.Credentials = CredentialCache.DefaultCredentials;
-                    }
-
-                    var res = request.GetResponse();
-                    _response = new StreamReader(res.GetResponseStream()).ReadToEnd();
-
-                    _currentState = RequestState.Done;
-
-                    _shouldExpire = true;
-                    RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
-                }
-                catch (Exception ex)
-                {
-                    _response = ex.Message;
-
-                    _currentState = RequestState.Error;
-
-                    _shouldExpire = true;
-                    RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
-
-                    return;
-                }
-            });
+            GETAsync(url, authToken, timeout);
         }
 
         /// <summary>

@@ -1,27 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using Brain.Templates;
-using Grasshopper.GUI.Script;
+
 using Grasshopper.Kernel;
-using Rhino;
 using Rhino.Geometry;
+using Brain.Templates;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 
 namespace Brain.UtilComps
 {
-    public class HTTPPostRequestAsyncComponent : GH_Component_HTTPAsync
+    public class HTTPGetRequestComponent : GH_Component_HTTPSync
     {
         /// <summary>
-        /// Initializes a new instance of the HTTPPostRequestAsyncComponent class.
+        /// Initializes a new instance of the HTTPGetRequestComponent class.
         /// </summary>
-        public HTTPPostRequestAsyncComponent()
-          : base("HTTP POST (async)", "POST Async",
-              "Creates a generic HTTP POST request (asynchronous)",
-              "Brain", "Utils")
+        public HTTPGetRequestComponent()
+          : base("HTTP GET", 
+                "GET",
+                "Creates a generic HTTP GET request (synchronous)",
+                "Brain", 
+                "Utils")
         {
         }
 
@@ -29,15 +26,10 @@ namespace Brain.UtilComps
         /// Registers all the input parameters for this component.
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
-        {
-            // active
+        {// active
             pManager.AddBooleanParameter("Send", "S", "Perform the request?", GH_ParamAccess.item, false);
             // url (endpoint)
             pManager.AddTextParameter("Url", "U", "Url for the request", GH_ParamAccess.item);
-            // body
-            pManager.AddTextParameter("Body", "B", "Body of the request", GH_ParamAccess.item);
-            // context/type
-            pManager.AddTextParameter("Content Type", "T", "Content type for the request, such as \"application/json\", \"text/html\", etc.", GH_ParamAccess.item, "application/json");
 
             // custom headers (future)
             // custom headers would be nice here: how to handle key-value pairs in GH? takes in a tree?
@@ -64,80 +56,34 @@ namespace Brain.UtilComps
         /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            if (_shouldExpire)
-            {
-                switch(_currentState)
-                {
-                    case RequestState.Off:
-                        this.Message = "Inactive";
-                        _currentState = RequestState.Idle;
-                        break;
-
-                    case RequestState.Error:
-                        this.Message = "ERROR";
-                        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, _response);
-                        _currentState = RequestState.Idle;
-                        break;
-
-                    case RequestState.Done:
-                        this.Message = "Complete!";
-                        _currentState = RequestState.Idle;
-                        break;
-                }
-                // Output
-                DA.SetData(0, _response);
-                _shouldExpire = false;
-                return;
-            }
-
             bool active = false;
             string url = "";
-            string body = "";
-            string contentType = "";
             string authToken = "";
             int timeout = 0;
 
             DA.GetData("Send", ref active);
             if (!active)
             {
-                _currentState = RequestState.Off;
-                _shouldExpire = true;
-                _response = "";
-                ExpireSolution(true);
+                DA.SetData("Response", "");
                 return;
             }
 
             if (!DA.GetData("Url", ref url)) return;
-            if (!DA.GetData("Body", ref body)) return;
-            if (!DA.GetData("Content Type", ref contentType)) return;
             DA.GetData("Authorization", ref authToken);
             if (!DA.GetData("Timeout", ref timeout)) return;
 
             // Validity checks
             if (url == null || url.Length == 0)
             {
-                _response = "Empty URL";
-                _currentState = RequestState.Error;
-                _shouldExpire = true;
-                ExpireSolution(true);
-                return;
-            }
-            if (contentType == null || contentType.Length == 0)
-            {
-                _response = "Empty content type";
-                _currentState = RequestState.Error;
-                _shouldExpire = true;
-                ExpireSolution(true);
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Empty URL");
                 return;
             }
 
-            _currentState = RequestState.Requesting;
-            this.Message = "Requesting...";
+            string response = GET(url, authToken, timeout);
 
-            POSTAsync(url, body, contentType, authToken, timeout);  
+            // Output
+            DA.SetData(0, response);
         }
-
-
 
         /// <summary>
         /// Provides an Icon for the component.
@@ -157,7 +103,7 @@ namespace Brain.UtilComps
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("97B12696-7321-423E-BCF6-56486645DE15"); }
+            get { return new Guid("0E40A930-6427-4290-8B50-4185D500A4CF"); }
         }
     }
 }

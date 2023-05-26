@@ -171,11 +171,11 @@ In parenthesis, let's add a priority level:
 - [x] Raw GET component --> extension of the above.
 - [x] Get ENV variable component
 
-- [ ] Create a superclass for components with requests? (take the two prev components and abstract their common func)
-  - [ ] Prototype a custom `GH_Component` template for `sync` POST request components.
-  - [ ] Rewrite the `POST Sync` component to use the template.
-  - [ ] Do the same for `async`
-  - [ ] Do the same for `GET` requests. 
+- [x] Create a superclass for components with requests? (take the two prev components and abstract their common func)
+  - [x] Prototype a custom `GH_Component` template for `sync` POST request components.
+  - [x] Rewrite the `POST Sync` component to use the template.
+  - [x] Do the same for `async`
+  - [x] Do the same for `GET` requests. 
 
 - [ ] Simple OpenAI Text Completion component (Async)
 - [ ] Some other component
