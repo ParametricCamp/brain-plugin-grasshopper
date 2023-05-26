@@ -5,18 +5,21 @@ using System.Net;
 using System.Text;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
+using Brain.Templates;
 
 namespace Brain.UtilComps
 {
-    public class HTTPPostRequestComponent : GH_Component
+    public class HTTPPostRequestComponent : GH_Component_POSTSync
     {
         /// <summary>
         /// Initializes a new instance of the HTTPPostRequestComponent class.
         /// </summary>
         public HTTPPostRequestComponent()
-          : base("HTTP POST", "POST",
-              "Creates a generic HTTP POST request (synchronous)",
-              "Brain", "Utils")
+          : base("HTTP POST", 
+                "POST",
+                "Creates a generic HTTP POST request (synchronous)",
+                "Brain", 
+                "Utils")
         {
         }
 
@@ -93,45 +96,7 @@ namespace Brain.UtilComps
                 return;
             }
 
-            // Compose the request
-            byte[] data = Encoding.ASCII.GetBytes(body);
-
-            HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
-            request.Method = "POST";
-            request.ContentType = contentType;
-            request.ContentLength = data.Length;
-            request.Timeout = timeout;
-
-            // Handle authorization
-            if (authToken != null && authToken.Length > 0)
-            {
-                System.Net.ServicePointManager.Expect100Continue = true;
-                System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12; //the auth type
-
-                request.PreAuthenticate = true;
-                request.Headers.Add("Authorization", authToken);
-            }
-            else
-            {
-                request.Credentials = CredentialCache.DefaultCredentials;
-            }
-
-            using (var stream = request.GetRequestStream())
-            {
-                stream.Write(data, 0, data.Length);
-            }
-
-            string response = "";
-            try
-            {
-                var res = request.GetResponse();
-                response = new StreamReader(res.GetResponseStream()).ReadToEnd();
-            }
-            catch (Exception ex)
-            {
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went wrong: " + ex.Message);
-                return;
-            }
+            string response = POST(url, body, contentType, authToken, timeout);
 
             // Output
             DA.SetData(0, response);
