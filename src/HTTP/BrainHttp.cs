@@ -1,17 +1,20 @@
-﻿using System.Net;
+﻿using System;
+using System.IO;
+using System.Net;
 using System.Text;
 
 namespace Brain.HTTP
 {
     public class BrainHttp
     {
-        internal WebResponse GetWebResponseFromGet(string url, string authorization, int timeout)
+
+        internal string GetResponseFromGet(string url, string authorization, int timeout)
         {
             var request = CreateBaseRequest(url, "GET", authorization, timeout);
 
-            return request.GetResponse();
+            return GetResponse(request);
         }
-        internal WebResponse GetWebResponseFromPost(string body, string url, string contentType, string authorization, int timeout)
+        internal string GetResponseFromPost(string body, string url, string contentType, string authorization, int timeout)
         {
             // Compose the request
             byte[] data = Encoding.ASCII.GetBytes(body);
@@ -21,7 +24,11 @@ namespace Brain.HTTP
             request.ContentType = contentType;
             request.ContentLength = data.Length;
 
-            return request.GetResponse();
+            return GetResponse(request);
+        }
+        private string GetResponse(HttpWebRequest request)
+        {
+            return new StreamReader(request.GetResponse().GetResponseStream()).ReadToEnd();
         }
 
         private HttpWebRequest CreateBaseRequest(string url, string method, string authorization, int timeout)

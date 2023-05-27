@@ -2,8 +2,6 @@
 using Grasshopper.Kernel;
 using Rhino;
 using System;
-using System.IO;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace Brain.Templates
@@ -36,7 +34,7 @@ namespace Brain.Templates
             int timeout)
         {
             GetWebResponse(() => _http
-            .GetWebResponseFromGet(url, authorization, timeout));
+            .GetResponseFromGet(url, authorization, timeout));
         }
 
         protected void POSTAsync(
@@ -47,26 +45,22 @@ namespace Brain.Templates
             int timeout)
         {
             GetWebResponse(() => _http
-                .GetWebResponseFromPost(body, url, contentType, authorization, timeout));
+                .GetResponseFromPost(body, url, contentType, authorization, timeout));
         }
 
-        private void GetWebResponse(Func<WebResponse> getAsyncWebResponse)
+        private void GetWebResponse(Func<string> getAsyncWebResponse)
         {
             Task.Run(() =>
             {
                 try
                 {
-                    var response = getAsyncWebResponse.Invoke();
-      
-                    _response = new StreamReader(response.GetResponseStream()).ReadToEnd();
+                    _response = getAsyncWebResponse.Invoke();
                     _currentState = RequestState.Done;
                 }
                 catch (Exception ex)
                 {
                     _response = ex.Message;
                     _currentState = RequestState.Error;
-
-                    return;
                 }
                 finally
                 {
