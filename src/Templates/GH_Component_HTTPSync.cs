@@ -1,10 +1,11 @@
-﻿using Grasshopper.Kernel;
+﻿using Brain.HTTP;
+using Grasshopper.Kernel;
 using System;
 
 namespace Brain.Templates
 {
-    public abstract class GH_Component_HTTPSync : GH_Component_HTTPBase
-    {
+    public abstract class GH_Component_HTTPSync : GH_Component
+    { 
         public GH_Component_HTTPSync(string name, string nickname, string description, string category, string subcategory)
             : base(name, nickname, description, category, subcategory)
         {
