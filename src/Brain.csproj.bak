@@ -7,10 +7,6 @@
     <Description>Description of brain_ghplugin</Description>
     <TargetExt>.gha</TargetExt>
   </PropertyGroup>
-	
-  <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="7.28.23058.3001" />
-  </ItemGroup>
   
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
@@ -20,7 +16,7 @@
     <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
     <StartArguments>/runscript="_-RunScript (
         Set GH = Rhino.GetPlugInObject(""Grasshopper"") 
-        Call GH.OpenDocument("".\brain-plugin-grasshopper\tests\testing_workbench.ghx"")
+        Call GH.OpenDocument(""D:\Dropbox\JL\code\ParametricCamp\brain-plugin-grasshopper\tests\testing_workbench.ghx"")
       )"</StartArguments>
     <StartAction>Program</StartAction>
   </PropertyGroup>
