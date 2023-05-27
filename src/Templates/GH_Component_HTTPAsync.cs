@@ -39,16 +39,14 @@ namespace Brain.Templates
         {
             Task.Run(() =>
             {
-                var response = "";
-
                 try
                 {
-                    response =  getAsyncWebResponse.Invoke();
+                    _response =  getAsyncWebResponse.Invoke();
                     _currentState = RequestState.Done;
                 }
                 catch (Exception ex)
                 {
-                    response = ex.Message;
+                    _response = ex.Message;
                     _currentState = RequestState.Error;
                 }
                 finally
