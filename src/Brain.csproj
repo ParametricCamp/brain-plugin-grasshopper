@@ -10,6 +10,7 @@
   
   <ItemGroup>
     <PackageReference Include="Grasshopper" Version="7.13.21348.13001" IncludeAssets="compile;build" />
+    <PackageReference Include="System.Text.Json" Version="7.0.2" />
   </ItemGroup>
   
   <ItemGroup>
@@ -18,7 +19,7 @@
   
   <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
     <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
-    <StartArguments>/runscript="_-RunScript (
+	<StartArguments>/runscript="_-RunScript (
         Set GH = Rhino.GetPlugInObject(""Grasshopper"") 
         Call GH.OpenDocument(""D:\Dropbox\JL\code\ParametricCamp\brain-plugin-grasshopper\tests\testing_workbench.ghx"")
       )"</StartArguments>
