@@ -2,12 +2,12 @@
 using Rhino;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 
 namespace Brain.Templates
 {
@@ -16,10 +16,19 @@ namespace Brain.Templates
         protected string _response = "";
         protected bool _shouldExpire = false;
         protected RequestState _currentState = RequestState.Off;
+        protected bool _advanced = false;
+        protected Stopwatch _sw = new Stopwatch();
 
         public GH_Component_HTTPAsync(string name, string nickname, string description, string category, string subcategory)
     : base(name, nickname, description, category, subcategory)
         {
+        }
+
+        protected override void RegisterInputParams(GH_InputParamManager pManager)
+        {
+            pManager.AddBooleanParameter("Send", "S", "Perform the request?", GH_ParamAccess.item, false);
+            pManager.AddTextParameter("Authorization", "A", "If this request requires authorization, input your formatted token as an Auth string, e.g. \"Bearer h1g23g1fdg3d1\"", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("Timeout", "T", "Timeout for the request in ms. If the request takes longer that this, it will fail.", GH_ParamAccess.item, 10000);
         }
 
         protected override void ExpireDownStreamObjects()
