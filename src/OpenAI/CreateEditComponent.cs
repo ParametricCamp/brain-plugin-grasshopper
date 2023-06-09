@@ -13,45 +13,27 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static Brain.OpenAI.Schema;
 
 namespace Brain.OpenAI
 {
-    public class OAICreateEdit : GH_Component_HTTPAsync
+    public class CreateEditComponent : GH_Component_HTTPAsync
     {
-        public class CreateEdit
-        {
-            public Choice[] choices { get; set; }
-        }
-        public class Choice
-        {
-            public string text { get; set; }
-        }
-        public class ReqBody
-        {
-            public string model { get; set; }
-            public string input { get; set; }
-            public string instruction { get; set; }
-            public int? n { get; set; }
-            public double? temperature { get; set; } = null;
-            public double? top_p { get; set; } = null;
-        }
-
         private const string ENDPOINT = "https://api.openai.com/v1/edits";
         private const string contentType = "application/json";
-        public bool advanced = false;
-        Stopwatch sw = new Stopwatch();
 
-        public OAICreateEdit() :
+        public CreateEditComponent() :
             base("Create Edit", "Edit",
                 "Creates a new edit for the provided input, instruction, and parameters.",
                 "Brain", "OpenAI")
         { }
         public override Guid ComponentGuid => new Guid("{F40FAEB4-6A38-43E8-863C-E504B31230FA}");
+        public override GH_Exposure Exposure => GH_Exposure.primary;
 
         protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
         {
             base.AppendAdditionalComponentMenuItems(menu);
-            Menu_AppendItem(menu, "Advanced options", AdvancedClicked, true, advanced);
+            Menu_AppendItem(menu, "Advanced options", AdvancedClicked, true, _advanced);
         }
         readonly List<IGH_Param> advancedParams = new List<IGH_Param>() {
             new Param_String { Name = "Model", NickName = "Model", Description = "ID of the model to use. You can use the text-davinci-edit-001 or code-davinci-edit-001 model with this endpoint.", Optional =true },
@@ -62,8 +44,8 @@ namespace Brain.OpenAI
         private void AdvancedClicked(object sender, EventArgs e)
         {
             RecordUndoEvent("Toggle Advanced options");
-            advanced = !advanced;
-            if (advanced)
+            _advanced = !_advanced;
+            if (_advanced)
             {
                 foreach (var param in advancedParams)
                     Params.RegisterInputParam(param);
@@ -94,7 +76,7 @@ namespace Brain.OpenAI
         {
             if (_shouldExpire)
             {
-                sw.Stop();
+                _sw.Stop();
                 List<string> choices = new List<string>();
                 switch (_currentState)
                 {
@@ -104,18 +86,18 @@ namespace Brain.OpenAI
                         break;
 
                     case RequestState.Error:
-                        this.Message = $"ERROR\r\n{sw.Elapsed.ToShortString()}";
+                        this.Message = $"ERROR\r\n{_sw.Elapsed.ToShortString()}";
                         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, _response);
                         _currentState = RequestState.Idle;
                         break;
 
                     case RequestState.Done:
-                        this.Message = $"Complete!\r\n{sw.Elapsed.ToShortString()}";
+                        this.Message = $"Complete!\r\n{_sw.Elapsed.ToShortString()}";
                         _currentState = RequestState.Idle;
 
                         try
                         {
-                            var resJson = JsonSerializer.Deserialize<CreateEdit>(_response);
+                            var resJson = JsonSerializer.Deserialize<ChoicesSchema>(_response);
                             Choice[] choiceList = resJson.choices;
                             foreach (var choice in choiceList)
                                 choices.Add(choice.text);
@@ -158,14 +140,14 @@ namespace Brain.OpenAI
             double? temperature = null, top_p = null;
             DA.GetData("Input", ref input);
             DA.GetData("Instruction", ref instruction);
-            if (advanced)
+            if (_advanced)
             {
                 DA.GetData("Model", ref model);
                 DA.GetData("Count", ref n);
                 DA.GetData("Temperature", ref temperature);
                 DA.GetData("Top_%", ref top_p);
             }
-            ReqBody bodyJson = new ReqBody()
+            ReqSchema bodyJson = new ReqSchema()
             {
                 model = model,
                 input = input,
@@ -180,17 +162,17 @@ namespace Brain.OpenAI
 
             string body = JsonSerializer.Serialize(bodyJson, new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
 
-            sw.Restart();
+            _sw.Restart();
             POSTAsync(ENDPOINT, body, contentType, authToken, timeout);
         }
         public override bool Write(GH_IWriter writer)
         {
-            writer.SetBoolean("ShowAdvanced", advanced);
+            writer.SetBoolean("ShowAdvanced", _advanced);
             return base.Write(writer);
         }
         public override bool Read(GH_IReader reader)
         {
-            advanced = reader.GetBoolean("ShowAdvanced");
+            _advanced = reader.GetBoolean("ShowAdvanced");
             return base.Read(reader);
         }
     }

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Brain.UtilMethods;
 
 namespace Brain.UtilComps
 {
@@ -42,7 +43,7 @@ namespace Brain.UtilComps
             {
                 foreach (var b in bmp)
                 {
-                    string path = Path.Combine(dir, (string)(b.Tag?? (DateTime.Now.ToString("yyyyMMdd_HHmmssfff")+".png")));
+                    string path = Path.Combine(dir, BitmapName(b));
                     b.Save(path);
                     paths.Add(path);
                 }

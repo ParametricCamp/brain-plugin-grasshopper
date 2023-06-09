@@ -7,43 +7,39 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static Brain.OpenAI.Schema;
 
 namespace Brain.OpenAI
 {
-    public class OAIListModelsComponent : GH_Component_HTTPAsync
-    {
-        public class ListModels
-        {
-            public Model[] data { get; set; }
-        }
-        public class Model
-        {
-            public string id { get; set; }
-        }
+    public class RetrieveFileComponent : GH_Component_HTTPAsync
+    {//
+        private const string ENDPOINT = "https://api.openai.com/v1/files";
 
-        private const string ENDPOINT = "https://api.openai.com/v1/models";
-        Stopwatch sw = new Stopwatch();
-        public OAIListModelsComponent() :
-            base("List Models", "Models",
-                "Lists the currently available models, and provides basic information about each one such as the owner and availability.",
+        public RetrieveFileComponent() :
+            base("Retrieve Files", "File",
+                "Returns information about a specific file.",
                 "Brain", "OpenAI")
         { }
-        public override Guid ComponentGuid => new Guid("{11844CDA-FDDC-4FF1-B9CD-ABA68480427F}");
+        public override Guid ComponentGuid => new Guid("{3D942897-E56B-489A-8258-96A727A3A4B7}");
+        public override GH_Exposure Exposure => GH_Exposure.quarternary;
 
-        // Basic inputs implemented in Base
+        protected override void RegisterInputParams(GH_InputParamManager pManager)
+        {
+            base.RegisterInputParams(pManager);
+            pManager.AddTextParameter("ID", "ID", "The ID of the file to use for this request", GH_ParamAccess.item);
+        }
 
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
             pManager.AddTextParameter("Response", "R", "Request response", GH_ParamAccess.item);
-            pManager.AddTextParameter("Models", "M", "Available models", GH_ParamAccess.list);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             if (_shouldExpire)
             {
-                sw.Stop();
-                List<string> models = new List<string>();
+                _sw.Stop();
+                List<string> files = new List<string>();
                 switch (_currentState)
                 {
                     case RequestState.Off:
@@ -52,33 +48,19 @@ namespace Brain.OpenAI
                         break;
 
                     case RequestState.Error:
-                        this.Message = $"ERROR\r\n{sw.Elapsed.ToShortString()}";
+                        this.Message = $"ERROR\r\n{_sw.Elapsed.ToShortString()}";
                         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, _response);
                         _currentState = RequestState.Idle;
                         break;
 
                     case RequestState.Done:
-                        this.Message = $"Complete!\r\n{sw.Elapsed.ToShortString()}";
+                        this.Message = $"Complete!\r\n{_sw.Elapsed.ToShortString()}";
                         _currentState = RequestState.Idle;
-
-                        try
-                        {
-                            var resJson = JsonSerializer.Deserialize<ListModels>(_response);
-                            Model[] modelList = resJson.data;
-                            foreach (var model in modelList)
-                                models.Add(model.id);
-                        }
-                        catch (Exception ex)
-                        {
-                            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went wrong deserializing the response: " + ex.Message);
-                        }
-
                         break;
                 }
 
                 // Output...
                 DA.SetData(0, _response);
-                DA.SetDataList(1, models);
                 _shouldExpire = false;
                 return;
             }
@@ -100,11 +82,14 @@ namespace Brain.OpenAI
             DA.GetData("Authorization", ref authToken);
             if (!DA.GetData("Timeout", ref timeout)) return;
 
+            string id = null;
+            DA.GetData("ID", ref id);
+
             _currentState = RequestState.Requesting;
             this.Message = "Requesting...";
 
-            sw.Restart();
-            GETAsync(ENDPOINT, authToken, timeout);
+            _sw.Restart();
+            GETAsync(ENDPOINT+id, authToken, timeout);
         }
     }
 }

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using static Brain.OpenAI.OAICreateImage;
+using static Brain.OpenAI.CreateImageComponent;
 
 namespace Brain.UtilComps
 {
@@ -38,6 +38,7 @@ namespace Brain.UtilComps
             {
                 DA.SetDataList(0, bmp);
                 output = false;
+                Message = "";
                 return;
             }
             List<string> urls = new List<string>();
@@ -45,6 +46,7 @@ namespace Brain.UtilComps
             bmp = new List<Bitmap>();
             DA.GetDataList(0, urls);
             DA.GetDataList(1, b64s);
+            Message = "Converting...";
             Task.Run(() =>
             {
                 using (WebClient webClient = new WebClient())

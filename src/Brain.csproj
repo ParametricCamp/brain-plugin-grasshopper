@@ -14,7 +14,12 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Net.Http">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Windows.Forms">
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   
   <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
@@ -25,5 +30,5 @@
       )"</StartArguments>
     <StartAction>Program</StartAction>
   </PropertyGroup>
-
+  
 </Project>

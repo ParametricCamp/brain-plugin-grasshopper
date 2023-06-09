@@ -15,45 +15,29 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static Brain.OpenAI.Schema;
+using static Brain.UtilMethods;
 
 namespace Brain.OpenAI
 {
-    public class OAICreateImage : GH_Component_HTTPAsync
+    public class CreateImageComponent : GH_Component_HTTPAsync
     {
-        public class CreateImage
-        {
-            public Data[] data { get; set; }
-        }
-        public class Data
-        {
-            public string url { get; set; }
-            public string b64_json { get; set; }
-        }
-        public class ReqBody
-        {
-            public string prompt { get; set; }
-            public int? n { get; set; }
-            public string size { get; set; }
-            public string response_format { get; set; }
-            public string user { get; set; }
-        }
         private const string ENDPOINT = "https://api.openai.com/v1/images/generations";
         private const string contentType = "application/json";
         public string format = null;
-        public bool advanced = false;
-        Stopwatch sw = new Stopwatch();
 
-        public OAICreateImage() :
+        public CreateImageComponent() :
             base("Create image", "Image",
                 "Creates an image given a prompt.",
                 "Brain", "OpenAI")
         { }
         public override Guid ComponentGuid => new Guid("{D3E4C347-2D1C-4BEF-A249-54BBC2D08109}");
+        public override GH_Exposure Exposure => GH_Exposure.secondary;
 
         protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
         {
             base.AppendAdditionalComponentMenuItems(menu);
-            Menu_AppendItem(menu, "Advanced options", AdvancedClicked, true, advanced);
+            Menu_AppendItem(menu, "Advanced options", AdvancedClicked, true, _advanced);
         }
         readonly List<IGH_Param> advancedParams = new List<IGH_Param>() {
             new Param_Integer { Name = "Size", NickName = "Size", Description = "The size of the generated square images. Must be one of 256, 512, or 1024.", Optional = true },
@@ -64,8 +48,8 @@ namespace Brain.OpenAI
         private void AdvancedClicked(object sender, EventArgs e)
         {
             RecordUndoEvent("Toggle Advanced options");
-            advanced = !advanced;
-            if (advanced)
+            _advanced = !_advanced;
+            if (_advanced)
             {
                 foreach(var param in advancedParams)
                     Params.RegisterInputParam(param);
@@ -93,9 +77,10 @@ namespace Brain.OpenAI
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            DA.DisableGapLogic();
             if (_shouldExpire)
             {
-                sw.Stop();
+                _sw.Stop();
                 List<string> url = new List<string>();
                 List<string> b64 = new List<string>();
                 switch (_currentState)
@@ -106,18 +91,18 @@ namespace Brain.OpenAI
                         break;
 
                     case RequestState.Error:
-                        this.Message = $"ERROR\r\n{sw.Elapsed.ToShortString()}";
+                        this.Message = $"ERROR\r\n{_sw.Elapsed.ToShortString()}";
                         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, _response);
                         _currentState = RequestState.Idle;
                         break;
 
                     case RequestState.Done:
-                        this.Message = $"Complete!\r\n{sw.Elapsed.ToShortString()}";
+                        this.Message = $"Complete!\r\n{_sw.Elapsed.ToShortString()}";
                         _currentState = RequestState.Idle;
 
                         try
                         {
-                            var resJson = JsonSerializer.Deserialize<CreateImage>(_response);
+                            var resJson = JsonSerializer.Deserialize<DataSchema>(_response);
                             Data[] data = resJson.data;
                             switch (format)
                             {                                
@@ -127,7 +112,6 @@ namespace Brain.OpenAI
                                     break;
                                 case "url":
                                 default:
-                                    WebClient client = new WebClient();
                                     foreach (var image in data)
                                         url.Add(image.url);
                                     break;
@@ -164,20 +148,18 @@ namespace Brain.OpenAI
 
             DA.GetData("Authorization", ref authToken);
             if (!DA.GetData("Timeout", ref timeout)) return;
-            string prompt = null;
+            string prompt = null, user = null ;
             format = null;
             int? size = 256, n = null;
-            string user = null;
-            bool advanced = false;
             DA.GetData("Prompt", ref prompt);
-            if (advanced)
+            if (_advanced)
             {
                 DA.GetData("Size", ref size);
                 DA.GetData("Format", ref format);
                 DA.GetData("Count", ref n);
                 DA.GetData("User", ref user);
             }
-            ReqBody bodyJson = new ReqBody()
+            ReqSchema bodyJson = new ReqSchema()
             {
                 prompt = prompt,
                 n = n,
@@ -191,19 +173,18 @@ namespace Brain.OpenAI
 
             string body = JsonSerializer.Serialize(bodyJson, new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
 
-            sw.Restart();
+            _sw.Restart();
             POSTAsync(ENDPOINT, body, contentType, authToken, timeout);
         }
         public override bool Write(GH_IWriter writer)
         {
-            writer.SetBoolean("ShowAdvanced", advanced);
+            writer.SetBoolean("ShowAdvanced", _advanced);
             return base.Write(writer);
         }
         public override bool Read(GH_IReader reader)
         {
-            advanced = reader.GetBoolean("ShowAdvanced");
+            _advanced = reader.GetBoolean("ShowAdvanced");
             return base.Read(reader);
         }
-        private string String(int? size) => string.Concat(size,'x',size);
     }
 }
